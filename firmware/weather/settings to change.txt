@@ -1,0 +1,12 @@
+Board: ESP32S3 Dev Module
+PSRAM: OPI PSRAM
+Flash Size: 16MB
+USB CDC On Boot: Enabled
+Partition Scheme: 16M Flash (3MB APP/9.9MB FATFS)
+Port: the CH340 COM, not the native USB
+
+No UART1 switch. Leave BOOT. The cable stays in the USB socket.
+
+The glass catch-up names the board, PSRAM, 16MB flash, and USB CDC On Boot Enabled.
+The partition is the one from the kickoff 4.3 note, because CHECK and INSTALL need a second slot.
+PSRAM XIP stays off. Do not turn bb_invalidate_cache back on.
