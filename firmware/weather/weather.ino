@@ -1,3 +1,4 @@
+
 /*
   weather, night sky, plane tracker
   Freenove FNK0115B, 4.3 inch, 480x272. Not the 7 inch board.
@@ -1262,6 +1263,7 @@ void drawAir() {
     snprintf(lab, sizeof(lab), "%d", ranges[i]);
     chip(500 + i * 96, 8, 88, 36, lab, rangeNm == ranges[i]);
   }
+  gfx->fillRect(X0, 52, 380, 378, COL_BG);
   int shown = nPlane < 8 ? nPlane : 8;
   for (int i = 0; i < shown; i++) {
     int y = 56 + i * 46;
@@ -2708,6 +2710,29 @@ bool readStr0(const char *s, const char *end, const char *key, char *out, int n)
   return copyQuoted(p + 1, out, n);
 }
 
+struct BufStream : public Stream {
+  char *buf;
+  int cap;
+  int n;
+  BufStream(char *b, int c) : buf(b), cap(c), n(0) {
+    if (buf && cap > 0) buf[0] = 0;
+  }
+  int available() override { return 0; }
+  int read() override { return -1; }
+  int peek() override { return -1; }
+  size_t write(uint8_t c) override {
+    if (buf && n < cap - 1) {
+      buf[n++] = (char)c;
+      buf[n] = 0;
+    }
+    return 1;
+  }
+  size_t write(const uint8_t *data, size_t len) override {
+    for (size_t i = 0; i < len; i++) write(data[i]);
+    return len;
+  }
+};
+
 bool httpGet(const char *url, char *body, int cap) {
   body[0] = 0;
   if (WiFi.status() != WL_CONNECTED || cap < 16 || wifiBusy) return false;
@@ -2721,24 +2746,9 @@ bool httpGet(const char *url, char *body, int cap) {
     http.addHeader("Accept", "application/json,text/plain,*/*");
     int code = http.GET();
     if (code == 200) {
-      int got = 0;
-      uint32_t t0 = millis();
-      while (got < cap - 1 && millis() - t0 < 12000) {
-        int n = http.getStream().available();
-        if (n > 0) {
-          if (n > 1024) n = 1024;
-          if (got + n > cap - 1) n = cap - 1 - got;
-          int r = http.getStream().readBytes(body + got, n);
-          if (r <= 0) break;
-          got += r;
-          delay(1);
-          continue;
-        }
-        if (!http.connected()) break;
-        delay(2);
-      }
-      body[got] = 0;
-      ok = got > 2;
+      BufStream out(body, cap);
+      int n = http.writeToStream(&out);
+      ok = n > 2;
     }
     http.end();
   }
@@ -2847,9 +2857,9 @@ void pullPack() {
            "&timezone=auto&forecast_days=7&forecast_hours=24&past_hours=0",
            placeLat, placeLon);
   if (!httpGet(url, packBuf, 20000)) return;
-  const char *cur = strstr(packBuf, "\"current\"");
-  const char *hour = strstr(packBuf, "\"hourly\"");
-  const char *day = strstr(packBuf, "\"daily\"");
+  const char *cur = strstr(packBuf, "\"current\":");
+  const char *hour = strstr(packBuf, "\"hourly\":");
+  const char *day = strstr(packBuf, "\"daily\":");
   const char *end = packBuf + strlen(packBuf);
   const char *curEnd = hour ? hour : end;
   const char *hourEnd = day ? day : end;
@@ -3941,6 +3951,7 @@ void onTap(int x, int y) {
         askNet(NET_PLANE);
         lastPlane = millis();
         needDraw = true;
+        return;
       }
     }
     int shown = nPlane < 8 ? nPlane : 8;
