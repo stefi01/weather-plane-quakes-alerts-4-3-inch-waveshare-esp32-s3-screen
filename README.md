@@ -12,7 +12,7 @@ firmware/weather/weather.ino, the picture headers, and the touch files XPT2046_T
 
 libraries/GFX_Library_for_Arduino and libraries/TJpg_Decoder are the two libraries the sketch includes from the Arduino libraries folder. libraries/XPT2046_Touchscreen-master is the touch library this compile also used. The copy beside the ino is the one this sketch builds.
 
-ota/version.txt and ota/weather.bin are the update files. weather.bin is the app bin from the compile that ran on 12 Nov 2026. It is 1266672 bytes.
+ota/version.txt and ota/weather.bin are the update files. weather.bin is the app bin from the compile that ran on 13 Nov 2026. It is 1267440 bytes.
 
 ## Updates
 
