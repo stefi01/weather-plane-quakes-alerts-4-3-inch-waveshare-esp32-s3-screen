@@ -1,0 +1,11 @@
+Weather, night sky, and plane tracker. Freenove 4.3 inch. MERID_VER 1.1.
+Board ESP32-S3. Flash download tool: SPI SPEED 80MHz, SPI MODE DIO, DoNotChgBin ticked, do not press ERASE.
+Tools menu for this export: ESP32S3 Dev Module, Flash Size 16MB, partition 16M Flash (3MB APP/9.9MB FATFS), PSRAM OPI, Flash Mode QIO, USB CDC On Boot Enabled.
+
+0x0      weather.ino.bootloader.bin
+0x8000   weather.ino.partitions.bin
+0xe000   boot_app0.bin
+0x10000  weather.ino.esp32s3.bin
+
+All four files. The bin beside the sketch is the app only, and it goes at 0x10000.
+GitHub CHECK reads ota/version.txt. INSTALL reads ota/weather.bin, which is this sketch bin.
